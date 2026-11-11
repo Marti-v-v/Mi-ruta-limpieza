@@ -36,6 +36,17 @@ input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;displa
 input::-webkit-date-and-time-value{text-align:left;margin:0}
 .days button{min-width:0;overflow:hidden}
 .days button small{font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+input[type=date],input[type=time]{width:100%;min-width:0;box-sizing:border-box}
+/* Pantallas pequeñas: un campo por fila y días compactos */
+@media (max-width:540px){
+  .grid2{grid-template-columns:minmax(0,1fr)!important}
+  .grid2 .row,.grid2 .err{grid-column:auto!important}
+  .days .lbl{display:none}
+  .days button{padding:6px 0;font-size:.8rem}
+  .days button small{font-size:.72rem}
+  .sum b{font-size:1rem}
+  .wrap{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 .bar{position:sticky;top:0;z-index:5;background:var(--accent);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
@@ -525,7 +536,7 @@ function vSemana(){
     <button class="btn small" aria-label="Semana siguiente" onclick="fecha='${iso(addD(d0,7))}';render()">›</button>
     ${semana.includes(hoy)?"":`<button class="btn small" onclick="irFecha('${hoy}')">Hoy</button>`}</div>`;
   h+=`<div class="days">${semana.map((f,i)=>{const pp=plan(f),n=pp.paradas.length;
-    return `<button class="${f===fecha?"on":""} ${f===hoy?"hoy":""} ${pp.libre?"libre":""} ${!n&&!pp.libre?"vacio":""}" onclick="fecha='${f}';movId=null;render()">${DIAS[i][1]}<b>${fromIso(f).getDate()}</b><small>${pp.libre?"🏖️":n?n+" casa"+(n>1?"s":""):"libre"}</small></button>`}).join("")}</div>`;
+    return `<button class="${f===fecha?"on":""} ${f===hoy?"hoy":""} ${pp.libre?"libre":""} ${!n&&!pp.libre?"vacio":""}" onclick="fecha='${f}';movId=null;render()">${DIAS[i][1]}<b>${fromIso(f).getDate()}</b><small>${pp.libre?"🏖️":n?`${n}<span class="lbl"> casa${n>1?"s":""}</span>`:"–"}</small></button>`}).join("")}</div>`;
   h+=`<div class="sum"><div><span>Limpieza</span><b>${dur(r.trab)}</b></div><div><span>Trayectos</span><b>${dur(r.tray)}</b></div><div><span>Vuelve a</span><b>${r.out.length?hhmm(r.fin):"—"}</b></div></div>`;
   if(hayPrecio())h+=`<div class="money">💶 Este día: <b>${eur(eurDia(fecha))}</b> · Semana: <b>${eur(semana.reduce((t,f)=>t+eurDia(f),0))}</b></div>`;
   if(p.libre)h+=`<div class="banner libreb"><span>🏖️ ${p.libre.tipo==="festivo"?"Festivo":"Día libre"}${p.libre.nota?": "+esc(p.libre.nota):""}</span><button class="btn small" onclick="setTab('plan')">Ver días libres</button></div>`;
@@ -624,7 +635,7 @@ function vAnio(){
 function vPlan(){
   const t=S.semana[diaPlan];
   let h=`<div class="meta" style="margin-bottom:10px">Lo que se repite solo. Cada casa con su frecuencia. Los cambios de un día concreto se hacen en Semana.</div>`;
-  h+=`<div class="days">${DIAS.map(([k,n])=>`<button class="${k===diaPlan?"on":""} ${!S.semana[k].paradas.length?"vacio":""}" onclick="diaPlan='${k}';render()">${n}<small>${S.semana[k].paradas.length} casas</small></button>`).join("")}</div>`;
+  h+=`<div class="days">${DIAS.map(([k,n])=>`<button class="${k===diaPlan?"on":""} ${!S.semana[k].paradas.length?"vacio":""}" onclick="diaPlan='${k}';render()">${n}<small>${S.semana[k].paradas.length}<span class="lbl"> casas</span></small></button>`).join("")}</div>`;
   h+=`<div class="grid2" style="margin-bottom:12px"><label>Salgo a las<input id="plInicio" type="time" value="${esc(t.inicio)}" onchange="S.semana[diaPlan].inicio=this.value||'08:00';save()"></label>
     <label>Vuelta a casa (min)<input id="plVuelta" type="number" inputmode="numeric" min="0" value="${+t.vuelta||0}" onchange="S.semana[diaPlan].vuelta=Math.max(0,+this.value||0);save()"></label></div>`;
   h+=`<div class="list">`+(t.paradas.map((p,i)=>{const c=casa(p.casa);if(!c)return "";
@@ -743,6 +754,7 @@ function vCopia(){
       <label>Hora de salida habitual<input id="ajInicio" type="time" value="${S.ajustes.inicio}" onchange="setAj('inicio',this.value||'08:00')"></label>
       <button class="btn" onclick="DIAS.forEach(([k])=>S.semana[k].inicio=S.ajustes.inicio);save();toast('Hora aplicada al plan fijo')">Aplicar al plan fijo</button>
     </div></div>
+  <div class="meta" style="text-align:center">Mi Ruta · versión 14</div>
   <div class="card"><h3>Exportar a Excel</h3><div class="meta">Crea un archivo CSV con todas las fechas del mes. Se abre en Excel o Google Sheets. Para otro mes, usa la pestaña Mes.</div><div class="row"><button class="btn pri" onclick="exportCSV()">Exportar este mes (CSV)</button></div></div>
   <div class="card"><h3>Copia de seguridad</h3><div class="meta">Tus datos ya están en la nube. Esto es una copia extra en un archivo, por si acaso. Puedes guardarla en Google Drive.</div>
     <div class="row"><button class="btn pri" onclick="exportJSON()">Guardar copia</button><label class="btn" style="flex-direction:row;color:var(--fg)">Restaurar copia<input type="file" id="fRestore" accept=".json,application/json" hidden onchange="restaurar(this)"></label></div></div>
