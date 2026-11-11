@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ruta de Limpieza</title>
+<meta name="theme-color" content="#0f8a74">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f3f6f5; --card:#ffffff; --fg:#17302b; --muted:#5d7570; --line:#d5e2de;
+  --accent:#0f8a74; --accent-soft:#dff2ec; --warn:#b06a0c; --warn-soft:#fbefd9; --home:#3a5a9b; --danger:#b3261e;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1716; --card:#172321; --fg:#e4efec; --muted:#93aaa4; --line:#2a3a37;
+  --accent:#2fae93; --accent-soft:#183a33; --warn:#e9a845; --warn-soft:#3a2e17; --home:#8aa6e0; --danger:#f2938c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1716; --card:#172321; --fg:#e4efec; --muted:#93aaa4; --line:#2a3a37;
+  --accent:#2fae93; --accent-soft:#183a33; --warn:#e9a845; --warn-soft:#3a2e17; --home:#8aa6e0; --danger:#f2938c; color-scheme:dark}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1;min-width:70px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:8px 6px;font:600 .8rem var(--font);cursor:pointer}
+.seg button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.money{margin:-6px 0 14px;font-size:.9rem;color:var(--muted)}
+.money b{color:var(--fg)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+.bar{position:sticky;top:0;z-index:5;background:var(--accent);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bar h1{margin:0;font-size:1.2rem;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.salir{border:1px solid rgba(255,255,255,.6);background:none;color:#fff;border-radius:8px;padding:5px 10px;font:600 .8rem var(--font);cursor:pointer;flex:none}
+.auth{display:flex;flex-direction:column;align-items:center;gap:14px;max-width:400px;margin:10px auto 0}
+.auth>img{border-radius:18px}
+.auth h2{margin:0;font-size:1.4rem}
+.auth .card{width:100%}
+.err{color:var(--danger);font-size:.85rem;font-weight:600}
+.ok{color:var(--accent);font-size:.85rem;font-weight:600}
+.btn.link{border:0;background:none;color:var(--accent);padding:6px}
+.wrap{max-width:640px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+h3{margin:0;font-size:1.05rem}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav button{border:0;background:none;color:var(--muted);font:600 .75rem var(--font);padding:8px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.weeknav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+.weeknav b{min-width:9em;text-align:center;text-transform:capitalize}
+.days{grid-template-columns:repeat(7,1fr)!important;gap:4px}
+.days.six{grid-template-columns:repeat(6,1fr)!important}
+.days button{padding:6px 0}
+.days button b{font-size:1.05rem}
+.days button.hoy{border-color:var(--accent)}
+.chip.soft{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;background:var(--warn-soft);color:var(--fg);border:1px solid var(--warn);border-radius:10px;padding:8px 10px;margin-bottom:12px;font-size:.85rem}
+.movebox{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .ch{text-align:center;font-size:.72rem;font-weight:700;color:var(--muted);padding:2px 0}
+.cd{aspect-ratio:1/1.15;max-width:100%;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;font:inherit;min-width:0}
+.cd .n{font-size:.8rem;font-weight:600;position:relative}
+.cd .mk{position:absolute;top:-1px;right:-7px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.cd .c{font-size:.95rem;font-weight:700;color:var(--accent);line-height:1.1}
+.cd .hh{font-size:.62rem;color:var(--muted)}
+.cd.lleno{background:var(--accent-soft)}
+.cd.fuera{opacity:.35}
+.cd.hoy{border-color:var(--accent);border-width:2px}
+.cd.sel{outline:2px solid var(--fg);outline-offset:-2px}
+.nav{grid-template-columns:repeat(5,1fr)}
+.days button.vacio{opacity:.55}
+.days button.libre{background:var(--warn-soft)}
+.cd.libre{background:var(--warn-soft)}
+.banner.libreb{border-color:var(--line)}
+.real{font-size:.8rem;color:var(--muted)}
+.real input{width:78px;padding:4px 6px}
+.cobro{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.cobro .cinfo{display:flex;flex-direction:column;min-width:0}
+.cobro.pagado .cinfo b{color:var(--accent)}
+a.btn{display:inline-block;color:var(--fg)}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table.anio{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.88rem}
+.anio th,.anio td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.anio th:first-child,.anio td:first-child{text-align:left;font-weight:600}
+.anio th{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.anio tbody tr{cursor:pointer}
+.anio tr.actual{background:var(--accent-soft)}
+.anio tbody tr:last-child td{border-bottom:0}
+
+.nav button span{font-size:1.3rem;line-height:1}
+.nav button.on{color:var(--accent)}
+.days{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
+.days button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:8px 0;cursor:pointer;font:700 .85rem var(--font);display:flex;flex-direction:column;align-items:center;gap:2px}
+.days button small{font:500 .7rem var(--font);color:var(--muted)}
+.days button.on{border-color:var(--accent);background:var(--accent-soft)}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sum div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.sum b{display:block;font-size:1.1rem;font-variant-numeric:tabular-nums}
+.sum span{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.start{display:flex;align-items:center;gap:8px;margin-bottom:12px;color:var(--muted);font-size:.9rem}
+input,select{font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-width:0;width:100%}
+.start input{width:auto}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.stop,.travel{display:grid;grid-template-columns:50px 1fr;gap:10px}
+.time{font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums;text-align:right;padding-top:12px}
+.node{position:relative;padding-left:20px;padding-bottom:6px;min-width:0}
+.node::before{content:"";position:absolute;left:5px;top:0;bottom:0;width:2px;background:var(--line)}
+.stop .node::after{content:"";position:absolute;left:0;top:15px;width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--accent)}
+.stop .node.home::after{border-color:var(--home);border-radius:3px}
+.travel .node{padding-block:4px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.meta{color:var(--muted);font-size:.85rem;overflow-wrap:anywhere}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.between{justify-content:space-between}
+.chip{font-size:.75rem;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.ok{background:var(--accent);color:#fff}
+.trip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.trip input{width:64px;padding:4px 6px}
+a{color:var(--accent);font-weight:600;text-decoration:none}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer;font:600 .85rem var(--font)}
+.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.small{padding:5px 10px;font-size:.78rem}
+.btn.danger{color:var(--danger)}
+.btn[disabled]{opacity:.4}
+.add{display:flex;gap:8px;margin-top:12px}
+.add select{flex:1}
+.empty{color:var(--muted);text-align:center;padding:20px;border:1px dashed var(--line);border-radius:12px}
+.list{display:flex;flex-direction:column;gap:10px}
+form.card{gap:10px}
+label{display:flex;flex-direction:column;gap:3px;font-size:.78rem;color:var(--muted);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:.85rem;z-index:9}
+.confirm{background:var(--warn-soft);border-color:var(--warn)}
+</style>
+</head>
+<body>
+<header class="bar"><h1 id="titulo">Mi ruta</h1><button id="salir" class="salir" onclick="salir()" hidden>Salir</button></header>
+<main class="wrap" id="view"></main>
+<nav class="nav" id="nav" hidden>
+  <button id="tab-semana" class="on" onclick="setTab('semana')"><span>📍</span>Semana</button>
+  <button id="tab-mes" onclick="setTab('mes')"><span>🗓️</span>Mes</button>
+  <button id="tab-plan" onclick="setTab('plan')"><span>↻</span>Plan</button>
+  <button id="tab-casas" onclick="setTab('casas')"><span>🏠</span>Casas</button>
+  <button id="tab-copia" onclick="setTab('copia')"><span>⚙️</span>Ajustes</button>
+</nav>
+<div class="toast" id="toast" hidden></div>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const DIAS=[["lun","Lun","Lunes"],["mar","Mar","Martes"],["mie","Mié","Miércoles"],["jue","Jue","Jueves"],["vie","Vie","Viernes"],["sab","Sáb","Sábado"],["dom","Dom","Domingo"]];
+const LLAVE={tiene:"Tiene copia",recoger:"Recoger llave",abren:"Le abren"};
+const AJ_DEF={modo:"transit",tema:"auto",inicio:"08:00",trayecto:15,precio:0,ultimaCopia:null};
+const MODOS={transit:"🚌 Bus/metro",driving:"🚗 Coche",walking:"🚶 A pie",bicycling:"🚲 Bici"};
+function normalizar(){
+  S.ajustes=Object.assign({},AJ_DEF,S.ajustes||{});S.fechas=S.fechas||{};S.llaves=S.llaves||{};
+  S.libres=S.libres||[];S.cobros=S.cobros||{};S.reales=S.reales||{};
+  if(!S.ajustes.ultimaCopia)S.ajustes.ultimaCopia=iso(new Date());
+  S.casas.forEach(c=>{c.pausas=c.pausas||[];c.tel=c.tel||"";c.precio=+c.precio||0});
+  const ref=iso(lunes(new Date()));
+  DIAS.forEach(([k])=>{S.semana[k]=S.semana[k]||{inicio:"08:00",paradas:[],vuelta:15};S.semana[k].paradas.forEach(p=>{p.freq=p.freq||"s";p.ref=p.ref||ref;delete p.llaveOk})});
+  const lim30=iso(addD(new Date(),-30)),lim2y=iso(addD(new Date(),-730));
+  Object.keys(S.llaves).forEach(f=>{if(f<lim30)delete S.llaves[f]});
+  [S.fechas,S.reales].forEach(o=>Object.keys(o).forEach(f=>{if(f<lim2y)delete o[f]}));
+  S.libres=S.libres.filter(l=>(l.hasta||l.desde)>=lim2y);
+  aplicarTema();
+}
+function aplicarTema(){const t=S&&S.ajustes?S.ajustes.tema:"auto";if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t)}
+const VACIO=()=>({home:{direccion:"",poblacion:""},casas:[],semana:Object.fromEntries(DIAS.map(([k])=>[k,{inicio:"08:00",paradas:[],vuelta:15}])),fechas:{},llaves:{},libres:[],cobros:{},reales:{}});
+const EJEMPLO={
+  home:{direccion:"Rambla de la Marina 120",poblacion:"L'Hospitalet"},
+  casas:[
+    {id:"c1",nombre:"Casa Ferrer (ejemplo)",poblacion:"Cornellà",direccion:"Av. Sant Ildefons 18, 3º2ª",horas:3,tel:"600111222",precio:12,llave:"tiene",llaveNota:"Llavero azul",notas:"Planchar camisas"},
+    {id:"c2",nombre:"Piso Martínez (ejemplo)",poblacion:"Esplugues",direccion:"C/ Laureà Miró 210",horas:2,tel:"600333444",precio:0,llave:"recoger",llaveNota:"Conserjería",notas:"Perro en casa"},
+    {id:"c3",nombre:"Casa Puig (ejemplo)",poblacion:"Sant Joan Despí",direccion:"C/ Major 45",horas:4,llave:"abren",llaveNota:"La señora está",notas:""}
+  ],
+  semana:{
+    lun:{inicio:"08:00",paradas:[{casa:"c1",trayecto:15,freq:"s"},{casa:"c2",trayecto:12,freq:"q"}],vuelta:20},
+    mar:{inicio:"08:30",paradas:[{casa:"c3",trayecto:18,freq:"s"}],vuelta:18},
+    mie:{inicio:"08:00",paradas:[{casa:"c2",trayecto:20,freq:"m1"}],vuelta:15},
+    jue:{inicio:"08:00",paradas:[{casa:"c1",trayecto:15,freq:"s"},{casa:"c3",trayecto:10,freq:"mu"}],vuelta:18},
+    vie:{inicio:"09:00",paradas:[],vuelta:15},
+    sab:{inicio:"09:00",paradas:[],vuelta:15},
+    dom:{inicio:"09:00",paradas:[],vuelta:15}
+  }
+};
+const OLD_KEY="rutaLimpieza.v1", K_USERS="rutaLimpieza.usuarios";
+let S=null,U=null,tab="semana",editId=null,pedirBorrar=null,authModo="login",authError="",authInfo="";
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+/* ---------- FIREBASE ---------- */
+const FB_OK=typeof firebase!=="undefined"&&window.FIREBASE_CONFIG&&!String(FIREBASE_CONFIG.apiKey||"").startsWith("PEGA");
+let auth=null,db=null,unsub=null,tGuardar=null,ultimoJson="",appVisible=false;
+if(FB_OK){
+  firebase.initializeApp(FIREBASE_CONFIG);
+  auth=firebase.auth();auth.languageCode="es";
+  db=firebase.firestore();
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+}
+const docRef=()=>db.collection("usuarios").doc(U.uid);
+/* Guardar: espera un momento y sube todo de una vez. Sin cobertura queda en el móvil y se sube al volver. */
+const save=()=>{if(!U)return;clearTimeout(tGuardar);tGuardar=setTimeout(escribir,600)};
+function escribir(){
+  if(!U||!S)return;const j=JSON.stringify(S);if(j===ultimoJson)return;ultimoJson=j;
+  docRef().set({json:j,email:U.email,actualizado:firebase.firestore.FieldValue.serverTimestamp()})
+    .catch(e=>toast("No se ha podido guardar ("+e.code+")"));
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){clearTimeout(tGuardar);escribir()}});
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+
+/* Datos de la versión anterior (sin nube) para no perderlos al pasar a Firebase */
+function datosLocales(email){
+  const u=(ls.get(K_USERS)||[]).find(x=>x.email===email);
+  const d=u?ls.get("rutaLimpieza.datos."+u.id):ls.get(OLD_KEY);
+  return d&&d.casas?d:null;
+}
+function mostrarApp(){appVisible=true;$("nav").hidden=false;$("salir").hidden=false;setTab("semana")}
+function alEntrar(user){
+  U=user;appVisible=false;
+  $("view").innerHTML=`<div class="empty">Cargando tus datos…</div>`;$("titulo").textContent="Mi ruta";
+  const vigilancia=setTimeout(()=>{if(!appVisible)$("view").innerHTML=`<div class="empty">No llegan los datos. Revisa la conexión. Si es la primera vez, necesitas internet.</div>`},10000);
+  unsub=docRef().onSnapshot({includeMetadataChanges:false},snap=>{
+    if(snap.metadata.hasPendingWrites)return;
+    if(!snap.exists){
+      if(snap.metadata.fromCache&&!navigator.onLine)return;
+      S=datosLocales(U.email)||JSON.parse(JSON.stringify(EJEMPLO));normalizar();
+      clearTimeout(vigilancia);escribir();mostrarApp();return;
+    }
+    const j=snap.data().json;if(j===ultimoJson&&appVisible)return;
+    try{S=JSON.parse(j)}catch(e){toast("Datos dañados en la nube");return}
+    ultimoJson=j;normalizar();clearTimeout(vigilancia);
+    if(!appVisible)mostrarApp();else render();
+  },err=>{clearTimeout(vigilancia);$("view").innerHTML=`<div class="empty">No se pueden leer los datos (${esc(err.code)}). Revisa las reglas de Firestore.</div>`});
+}
+function salir(){clearTimeout(tGuardar);escribir();if(unsub)unsub();unsub=null;auth.signOut()}
+function alSalir(){U=null;S=null;ultimoJson="";appVisible=false;aplicarTema();authError="";pintarAuth()}
+
+const ERR={"auth/email-already-in-use":"Ya hay una cuenta con ese correo. Entra o recupera la contraseña.","auth/invalid-email":"Ese correo no es válido.","auth/weak-password":"La contraseña necesita al menos 6 caracteres.",
+  "auth/invalid-credential":"Correo o contraseña incorrectos.","auth/wrong-password":"Contraseña incorrecta.","auth/user-not-found":"No hay ninguna cuenta con ese correo.",
+  "auth/too-many-requests":"Demasiados intentos. Espera unos minutos.","auth/network-request-failed":"Sin conexión. Para entrar o crear cuenta necesitas internet.","auth/missing-email":"Escribe tu correo."};
+const errTxt=e=>ERR[e&&e.code]||"Algo ha fallado ("+(e&&e.code||"desconocido")+").";
+
+function pintarAuth(){
+  $("nav").hidden=true;$("salir").hidden=true;
+  const reg=authModo==="registro",olvido=authModo==="olvido";
+  $("titulo").textContent=reg?"Crear cuenta":olvido?"Recuperar contraseña":"Iniciar sesión";
+  if(!FB_OK){$("view").innerHTML=`<div class="empty">Falta configurar Firebase. Rellena el archivo firebase-config.js con los datos de tu proyecto.</div>`;return}
+  let h=`<div class="auth"><img src="icon-192.png" alt="" width="72" height="72"><h2>Mi Ruta</h2>`;
+  if(olvido){
+    h+=`<form class="card" onsubmit="event.preventDefault();recuperar()" novalidate>
+      <div class="meta">Te enviamos un correo con un enlace para poner una contraseña nueva.</div>
+      <label>Correo electrónico<input id="aEmail" type="email" autocomplete="email" placeholder="nombre@gmail.com"></label>
+      <div class="err" id="aErr" ${authError?"":"hidden"}>${esc(authError)}</div>
+      ${authInfo?`<div class="ok">${esc(authInfo)}</div>`:""}
+      <button class="btn pri" id="aBtn">Enviar correo</button></form>
+      <div class="row" style="justify-content:center"><button class="btn link" onclick="authModo='login';authError='';authInfo='';pintarAuth()">Volver a entrar</button></div>`;
+  }else{
+    h+=`<form class="card" onsubmit="event.preventDefault();${reg?"registrar()":"login()"}" novalidate>
+      <label>Correo electrónico<input id="aEmail" type="email" autocomplete="email" autocapitalize="none" placeholder="nombre@gmail.com"></label>
+      ${reg?`<label>Nombre de usuario<input id="aUser" autocomplete="nickname" placeholder="María"></label>`:""}
+      <label>Contraseña<input id="aPass" type="password" autocomplete="${reg?"new-password":"current-password"}"></label>
+      ${reg?`<label>Repite la contraseña<input id="aPass2" type="password" autocomplete="new-password"></label><div class="meta">Mínimo 6 caracteres.</div>`:""}
+      <div class="err" id="aErr" ${authError?"":"hidden"}>${esc(authError)}</div>
+      ${authInfo?`<div class="ok">${esc(authInfo)}</div>`:""}
+      <button class="btn pri" id="aBtn">${reg?"Crear cuenta":"Entrar"}</button></form>
+      <div class="row" style="justify-content:center">${reg
+        ?`<button class="btn link" onclick="authModo='login';authError='';authInfo='';pintarAuth()">Ya tengo cuenta</button>`
+        :`<button class="btn link" onclick="authModo='registro';authError='';authInfo='';pintarAuth()">Crear cuenta nueva</button><button class="btn link" onclick="authModo='olvido';authError='';authInfo='';pintarAuth()">He olvidado la contraseña</button>`}</div>`;
+  }
+  $("view").innerHTML=h+`</div>`;
+}
+function errAuth(t){authError=t;const e=$("aErr");e.textContent=t;e.hidden=false;const b=$("aBtn");if(b)b.disabled=false}
+async function registrar(){
+  const email=$("aEmail").value.trim().toLowerCase(),user=$("aUser").value.trim(),p=$("aPass").value,p2=$("aPass2").value;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return errAuth("Escribe un correo válido.");
+  if(user.length<2)return errAuth("Escribe un nombre de usuario.");
+  if(p.length<6)return errAuth("La contraseña necesita al menos 6 caracteres.");
+  if(p!==p2)return errAuth("Las contraseñas no coinciden.");
+  $("aBtn").disabled=true;
+  try{const cr=await auth.createUserWithEmailAndPassword(email,p);await cr.user.updateProfile({displayName:user});toast("Cuenta creada. Hola, "+user)}
+  catch(e){errAuth(errTxt(e))}
+}
+async function login(){
+  const email=$("aEmail").value.trim().toLowerCase(),p=$("aPass").value;
+  if(!email||!p)return errAuth("Escribe tu correo y tu contraseña.");
+  $("aBtn").disabled=true;
+  try{await auth.signInWithEmailAndPassword(email,p)}catch(e){errAuth(errTxt(e))}
+}
+async function recuperar(){
+  const email=$("aEmail").value.trim().toLowerCase();
+  if(!email)return errAuth("Escribe tu correo.");
+  $("aBtn").disabled=true;
+  try{await auth.sendPasswordResetEmail(email);authError="";authInfo="Correo enviado. Mira también en spam.";authModo="login";pintarAuth()}
+  catch(e){errAuth(errTxt(e))}
+}
+async function cambiarPass(){
+  const a=$("pAct").value,n=$("pNueva").value,e=$("pErr");
+  const fallo=t=>{e.textContent=t;e.hidden=false};
+  if(n.length<6)return fallo("La nueva necesita al menos 6 caracteres.");
+  try{
+    await U.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(U.email,a));
+    await U.updatePassword(n);render();toast("Contraseña cambiada");
+  }catch(err){fallo(err.code==="auth/invalid-credential"||err.code==="auth/wrong-password"?"La contraseña actual no es correcta.":errTxt(err))}
+}
+
+const $=id=>document.getElementById(id);
+const casa=id=>S.casas.find(c=>c.id===id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const toMin=t=>{const[h,m]=(t||"08:00").split(":").map(Number);return h*60+m};
+const hhmm=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(Math.round(m%60)).padStart(2,"0");
+const dur=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h}h${r?" "+r+"m":""}`:`${r} min`};
+const full=p=>[p.direccion,p.poblacion].filter(Boolean).join(", ");
+const maps=(a,b)=>`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(full(a))}&destination=${encodeURIComponent(full(b))}&travelmode=${(S.ajustes||AJ_DEF).modo}`;
+function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2200)}
+
+/* ---------- FECHAS ---------- */
+const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const SEM7=DIAS.map(([k,n])=>[k,n]);
+const LARGO=Object.fromEntries(DIAS.map(([k,,l])=>[k,l]));
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fromIso=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addD=(d,n)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x};
+const lunes=d=>addD(d,-((d.getDay()+6)%7));
+const k7=d=>DIAS[(d.getDay()+6)%7][0];
+const keyDia=d=>k7(d);
+const fCorta=d=>`${d.getDate()} ${MESES[d.getMonth()].slice(0,3)}`;
+const HOY=()=>iso(new Date());
+const mesKey=(y,m)=>`${y}-${pad(m+1)}`;
+const Mayus=s=>s[0].toUpperCase()+s.slice(1);
+let fecha=HOY();
+let mesVista=(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()}})();
+let vistaAnual=false, diaPlan=k7(new Date()), movId=null, pausaId=null;
+
+/* ---------- FRECUENCIA ---------- */
+const FREQ={s:"Cada semana",q:"Cada 2 semanas",m1:"1ª semana del mes",m2:"2ª semana del mes",m3:"3ª semana del mes",m4:"4ª semana del mes",mu:"Última semana del mes"};
+const FREQC={s:"",q:"cada 2 sem.",m1:"1ª del mes",m2:"2ª del mes",m3:"3ª del mes",m4:"4ª del mes",mu:"última del mes"};
+function aplica(p,d){
+  const f=p.freq||"s";
+  if(f==="s")return true;
+  if(f==="q"){const w=Math.round((lunes(d)-fromIso(p.ref))/6048e5);return Math.abs(w)%2===0}
+  if(f==="mu")return addD(d,7).getMonth()!==d.getMonth();
+  return Math.ceil(d.getDate()/7)===+f.slice(1);
+}
+
+/* ---------- DÍAS LIBRES Y PAUSAS ---------- */
+const libreDe=f=>S.libres.find(l=>l.desde<=f&&f<=(l.hasta||l.desde));
+const pausada=(c,f)=>(c.pausas||[]).some(p=>p.desde<=f&&f<=p.hasta);
+function pascua(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mes=Math.floor((h+l-7*m+114)/31),dia=((h+l-7*m+114)%31)+1;return new Date(y,mes-1,dia)}
+function festivosCat(y){
+  const P=pascua(y);
+  return [["01-01","Año Nuevo"],["01-06","Reyes"],[null,"Viernes Santo",addD(P,-2)],[null,"Lunes de Pascua",addD(P,1)],["05-01","Fiesta del Trabajo"],["06-24","Sant Joan"],["08-15","Asunción"],["09-11","Diada"],["10-12","Fiesta Nacional"],["11-01","Todos los Santos"],["12-06","Constitución"],["12-08","Inmaculada"],["12-25","Navidad"],["12-26","Sant Esteve"]]
+    .map(([md,n,d])=>({f:d?iso(d):`${y}-${md}`,n}));
+}
+function addFestivos(y){
+  let n=0;festivosCat(y).forEach(({f,n:nota})=>{if(!S.libres.some(l=>l.desde===f&&l.tipo==="festivo")){S.libres.push({id:"l"+Date.now()+n,tipo:"festivo",desde:f,hasta:f,nota});n++}});
+  S.libres.sort((a,b)=>a.desde.localeCompare(b.desde));save();render();toast(`${n} festivos añadidos`);
+}
+
+/* Plan de una fecha: los cambios del día mandan; luego días libres; luego plantilla con frecuencias y pausas */
+function plan(f){
+  if(S.fechas[f])return {...S.fechas[f],cambiado:true};
+  const d=fromIso(f),t=S.semana[k7(d)],lib=libreDe(f);
+  if(lib)return {inicio:t.inicio,vuelta:t.vuelta,paradas:[],cambiado:false,libre:lib};
+  return {inicio:t.inicio,vuelta:t.vuelta,paradas:t.paradas.filter(p=>{const c=casa(p.casa);return c&&aplica(p,d)&&!pausada(c,f)}).map(p=>({casa:p.casa,trayecto:p.trayecto,freq:p.freq})),cambiado:false};
+}
+function fijar(f){
+  if(!S.fechas[f]){const p=plan(f);S.fechas[f]={inicio:p.inicio,vuelta:p.vuelta,paradas:p.paradas.map(x=>({casa:x.casa,trayecto:x.trayecto}))}}
+  return S.fechas[f];
+}
+function proximas(p,k,n=3){
+  const out=[];let d=fromIso(HOY());while(k7(d)!==k)d=addD(d,1);
+  for(let i=0;i<60&&out.length<n;i++,d=addD(d,7)){const f=iso(d);if(aplica(p,d)&&!libreDe(f)&&!pausada(casa(p.casa)||{},f))out.push(fCorta(d))}
+  return out;
+}
+function calc(d){
+  let t=toMin(d.inicio),trab=0,tray=0;const out=[];
+  d.paradas.forEach((p,i)=>{const c=casa(p.casa);if(!c)return;t+=+p.trayecto||0;tray+=+p.trayecto||0;
+    out.push({p,c,i,llega:t,sale:t+c.horas*60});t+=c.horas*60;trab+=c.horas*60});
+  if(out.length){t+=+d.vuelta||0;tray+=+d.vuelta||0}
+  return{out,fin:t,trab,tray};
+}
+
+/* ---------- DINERO Y HORAS ---------- */
+const precioDe=c=>+c.precio>0?+c.precio:(+S.ajustes.precio||0);
+const hayPrecio=()=>S.ajustes.precio>0||S.casas.some(c=>+c.precio>0);
+const horasDe=(f,c)=>{const r=S.reales[f]&&S.reales[f][c.id];return r!=null?r:c.horas};
+const eurDia=f=>calc(plan(f)).out.reduce((t,{c})=>t+horasDe(f,c)*precioDe(c),0);
+function resumenMes(y,m){
+  const R={dias:0,visitas:0,horas:0,tray:0,eur:0,porCasa:{}};
+  for(let d=new Date(y,m,1);d.getMonth()===m;d=addD(d,1)){
+    const f=iso(d),r=calc(plan(f));if(!r.out.length)continue;
+    R.dias++;R.tray+=r.tray;
+    r.out.forEach(({c})=>{const h=horasDe(f,c),e=h*precioDe(c),pc=R.porCasa[c.id]=R.porCasa[c.id]||{n:0,horas:0,eur:0};
+      pc.n++;pc.horas+=h;pc.eur+=e;R.visitas++;R.horas+=h;R.eur+=e});
+  }
+  const cob=S.cobros[mesKey(y,m)]||{};
+  R.cobrado=Object.entries(R.porCasa).reduce((t,[id,p])=>t+(cob[id]?p.eur:0),0);
+  R.pagados=Object.keys(R.porCasa).filter(id=>cob[id]).length;
+  return R;
+}
+const hfmt=h=>{const r=Math.round(h*10)/10;return String(r).replace(".",",")+" h"};
+
+/* ---------- NAVEGACIÓN ---------- */
+const TABS=["semana","mes","plan","casas","copia"];
+function setTab(t){tab=t;editId=null;pedirBorrar=null;movId=null;pausaId=null;TABS.forEach(x=>$("tab-"+x).classList.toggle("on",x===t));render();scrollTo(0,0)}
+function render(){
+  const d=fromIso(fecha);
+  $("titulo").textContent=tab==="semana"?`${LARGO[k7(d)]} ${fCorta(d)}`:tab==="mes"?(vistaAnual?`Año ${mesVista.y}`:`${Mayus(MESES[mesVista.m])} ${mesVista.y}`):{plan:"Plan fijo",casas:"Casas",copia:"Ajustes"}[tab];
+  $("view").innerHTML=tab==="semana"?vSemana():tab==="mes"?(vistaAnual?vAnio():vMes()):tab==="plan"?vPlan():tab==="casas"?vCasas():vCopia();
+}
+function irFecha(f){fecha=f;movId=null;diaPlan=k7(fromIso(f));setTab("semana")}
+function diasSinCopia(){const u=S.ajustes.ultimaCopia;return u?Math.floor((fromIso(HOY())-fromIso(u))/864e5):0}
+function telLinks(c){
+  if(!c.tel)return "";
+  const t=c.tel.replace(/[^\d+]/g,""),wa=(t.startsWith("+")?t.slice(1):t.length===9?"34"+t:t);
+  return `<a class="btn small" href="tel:${esc(t)}">📞 Llamar</a><a class="btn small" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">💬 WhatsApp</a>`;
+}
+
+/* ---------- SEMANA (fechas reales) ---------- */
+function vSemana(){
+  const d0=fromIso(fecha),L=lunes(d0),hoy=HOY();
+  const p=plan(fecha),r=calc(p);
+  const semana=DIAS.map((_,i)=>iso(addD(L,i)));
+  let h="";
+  const sc=diasSinCopia();
+  h+=`<div class="weeknav"><button class="btn small" aria-label="Semana anterior" onclick="fecha='${iso(addD(d0,-7))}';render()">‹</button>
+    <b>${fCorta(L)} – ${fCorta(addD(L,6))}</b>
+    <button class="btn small" aria-label="Semana siguiente" onclick="fecha='${iso(addD(d0,7))}';render()">›</button>
+    ${semana.includes(hoy)?"":`<button class="btn small" onclick="irFecha('${hoy}')">Hoy</button>`}</div>`;
+  h+=`<div class="days">${semana.map((f,i)=>{const pp=plan(f),n=pp.paradas.length;
+    return `<button class="${f===fecha?"on":""} ${f===hoy?"hoy":""} ${pp.libre?"libre":""} ${!n&&!pp.libre?"vacio":""}" onclick="fecha='${f}';movId=null;render()">${DIAS[i][1]}<b>${fromIso(f).getDate()}</b><small>${pp.libre?"🏖️":n?n+" casa"+(n>1?"s":""):"libre"}</small></button>`}).join("")}</div>`;
+  h+=`<div class="sum"><div><span>Limpieza</span><b>${dur(r.trab)}</b></div><div><span>Trayectos</span><b>${dur(r.tray)}</b></div><div><span>Vuelve a</span><b>${r.out.length?hhmm(r.fin):"—"}</b></div></div>`;
+  if(hayPrecio())h+=`<div class="money">💶 Este día: <b>${eur(eurDia(fecha))}</b> · Semana: <b>${eur(semana.reduce((t,f)=>t+eurDia(f),0))}</b></div>`;
+  if(p.libre)h+=`<div class="banner libreb"><span>🏖️ ${p.libre.tipo==="festivo"?"Festivo":"Día libre"}${p.libre.nota?": "+esc(p.libre.nota):""}</span><button class="btn small" onclick="setTab('plan')">Ver días libres</button></div>`;
+  if(p.cambiado)h+=`<div class="banner"><span>✏️ Este día tiene cambios. El plan fijo no se ha tocado.</span><button class="btn small" onclick="delete S.fechas[fecha];save();render();toast('Vuelve a lo planificado')">Deshacer cambios</button></div>`;
+  if(r.out.length)h+=`<div class="start">Salgo de casa a las <input id="inicio" type="time" value="${esc(p.inicio)}" onchange="fijar(fecha).inicio=this.value||'08:00';save();render()"></div>`;
+  if(!r.out.length){
+    h+=p.libre?"":`<div class="empty">Día libre.</div>`;
+  }else{
+    const llaves=S.llaves[fecha]||[],reales=S.reales[fecha]||{};
+    h+=stopHome(hhmm(toMin(p.inicio)),"Salgo de casa");
+    let prev=S.home;
+    r.out.forEach(({p:st,c,i,llega,sale},n)=>{
+      h+=travel(prev,c,st.trayecto,`fijar(fecha).paradas[${i}].trayecto=Math.max(0,+this.value||0)`);
+      const tengo=llaves.includes(c.id),kc=c.llave==="recoger"?(tengo?"ok":"warn"):"";
+      h+=`<div class="stop"><div class="time">${hhmm(llega)}</div><div class="node"><div class="card">
+        <div class="row between"><h3>${esc(c.nombre)}</h3><span class="meta">${hhmm(llega)}–${hhmm(sale)}</span></div>
+        <div class="meta">${esc(c.direccion)} · <b>${esc(c.poblacion)}</b></div>
+        <div class="row"><span class="chip">${c.horas} h</span><span class="chip ${kc}">🔑 ${LLAVE[c.llave]}${c.llaveNota?": "+esc(c.llaveNota):""}</span>${st.freq&&st.freq!=="s"?`<span class="chip soft">↻ ${FREQC[st.freq]}</span>`:""}</div>
+        ${c.notas?`<div class="meta">📝 ${esc(c.notas)}</div>`:""}
+        <div class="row real"><label for="hr${i}">Horas reales</label><input id="hr${i}" type="number" inputmode="decimal" step="0.25" min="0" placeholder="${c.horas}" value="${reales[c.id]??""}" onchange="setReal('${c.id}',this.value)">${reales[c.id]!=null&&reales[c.id]!==c.horas?`<span class="chip ${reales[c.id]>c.horas?"warn":""}">${reales[c.id]>c.horas?"+":""}${String(Math.round((reales[c.id]-c.horas)*100)/100).replace(".",",")} h</span>`:""}</div>
+        ${movId===i?`<div class="movebox"><label>Mover a otro día<input id="movFecha" type="date" value="${fecha}"></label><div class="row"><button class="btn small pri" onclick="moverFecha(${i})">Mover</button><button class="btn small" onclick="movId=null;render()">Cancelar</button></div></div>`
+        :`<div class="row">${telLinks(c)}${c.llave==="recoger"?`<button class="btn small" onclick="toggleLlave('${c.id}')">${tengo?"✓ Llave recogida":"Marcar llave"}</button>`:""}</div>
+          <div class="row"><button class="btn small" aria-label="Subir" ${n===0?"disabled":""} onclick="moverOrden(${i},-1)">↑</button>
+          <button class="btn small" aria-label="Bajar" ${n===r.out.length-1?"disabled":""} onclick="moverOrden(${i},1)">↓</button>
+          <button class="btn small" onclick="movId=${i};render()">Mover</button>
+          <button class="btn small" onclick="quitarDia(${i})">Quitar</button></div>`}
+      </div></div></div>`;
+      prev=c;
+    });
+    h+=travel(prev,S.home,p.vuelta,`fijar(fecha).vuelta=Math.max(0,+this.value||0)`);
+    h+=stopHome(hhmm(r.fin),"Vuelta a casa");
+  }
+  h+=S.casas.length?`<div class="add"><select id="addCasa">${S.casas.map(c=>`<option value="${c.id}">${esc(c.nombre)} · ${esc(c.poblacion)}</option>`).join("")}</select><button class="btn pri" onclick="addDia()">Añadir solo este día</button></div>
+    <div class="meta" style="margin-top:6px">Para que una casa se repita sola, añádela en <a href="#" onclick="event.preventDefault();setTab('plan')">Plan fijo</a>.</div>`
+    :`<div class="add"><button class="btn pri" onclick="setTab('casas')">Crear la primera casa</button></div>`;
+  return h;
+}
+function stopHome(t,txt){return `<div class="stop"><div class="time">${t}</div><div class="node home"><div class="card"><h3>${txt}</h3><div class="meta">${esc(full(S.home))||"Pon tu dirección en Casas"}</div></div></div></div>`}
+function travel(a,b,min,set){return `<div class="travel"><div></div><div class="node"><div class="trip">🚌 <input type="number" inputmode="numeric" min="0" value="${+min||0}" onchange="${set};save();render()"> min · <a href="${maps(a,b)}" target="_blank" rel="noopener">Ver ruta</a></div></div></div>`}
+function moverOrden(i,dx){const a=fijar(fecha).paradas;[a[i],a[i+dx]]=[a[i+dx],a[i]];save();render()}
+function quitarDia(i){fijar(fecha).paradas.splice(i,1);save();render();toast("Quitada solo de este día")}
+function toggleLlave(id){const l=S.llaves[fecha]=S.llaves[fecha]||[];const j=l.indexOf(id);j<0?l.push(id):l.splice(j,1);save();render()}
+function setReal(id,v){const o=S.reales[fecha]=S.reales[fecha]||{};if(v===""||isNaN(+v))delete o[id];else o[id]=Math.max(0,+v);if(!Object.keys(o).length)delete S.reales[fecha];save();render()}
+function addDia(){const id=$("addCasa").value;if(!id)return;fijar(fecha).paradas.push({casa:id,trayecto:S.ajustes.trayecto});save();render();toast("Añadida solo este día")}
+function moverFecha(i){
+  const dest=$("movFecha").value;
+  if(!dest||dest===fecha){movId=null;render();return}
+  const destino=fijar(dest),[st]=fijar(fecha).paradas.splice(i,1);
+  destino.paradas.push(st);movId=null;save();render();toast(`Movida al ${fCorta(fromIso(dest))}`);
+}
+
+/* ---------- MES ---------- */
+function segMesAnio(){return `<div class="seg" style="margin-bottom:10px"><button class="${vistaAnual?"":"on"}" onclick="vistaAnual=false;render()">Mes</button><button class="${vistaAnual?"on":""}" onclick="vistaAnual=true;render()">Año</button></div>`}
+function vMes(){
+  const {y,m}=mesVista,ini=lunes(new Date(y,m,1)),hoy=HOY(),R=resumenMes(y,m),mk=mesKey(y,m),cob=S.cobros[mk]||{},conPrecio=hayPrecio();
+  let h=segMesAnio()+`<div class="weeknav"><button class="btn small" aria-label="Mes anterior" onclick="cambiarMes(-1)">‹</button><b>${MESES[m]} ${y}</b><button class="btn small" aria-label="Mes siguiente" onclick="cambiarMes(1)">›</button></div>
+  <div class="cal">${["L","M","X","J","V","S","D"].map(x=>`<div class="ch">${x}</div>`).join("")}`;
+  for(let i=0;i<42;i++){
+    const d=addD(ini,i);if(i>=35&&d.getMonth()!==m)break;
+    const f=iso(d),dentro=d.getMonth()===m,p=plan(f),r=calc(p);
+    h+=`<button class="cd ${dentro?"":"fuera"} ${f===hoy?"hoy":""} ${f===fecha?"sel":""} ${r.out.length?"lleno":""} ${p.libre?"libre":""}" onclick="irFecha('${f}')">
+      <span class="n">${d.getDate()}${p.cambiado?'<i class="mk" title="Con cambios"></i>':""}</span>
+      ${r.out.length?`<span class="c">${r.out.length}</span><span class="hh">${hfmt(r.trab/60)}</span>`:p.libre?`<span class="hh">${p.libre.tipo==="festivo"?"Fest.":"Libre"}</span>`:""}</button>`;
+  }
+  h+=`</div><div class="sum" style="margin-top:14px"><div><span>Días</span><b>${R.dias}</b></div><div><span>Limpieza</span><b>${hfmt(R.horas)}</b></div><div><span>Trayectos</span><b>${dur(R.tray)}</b></div></div>`;
+  if(conPrecio)h+=`<div class="money">💶 Total: <b>${eur(R.eur)}</b> · Cobrado: <b>${eur(R.cobrado)}</b> · Pendiente: <b>${eur(R.eur-R.cobrado)}</b></div>`;
+  const filas=Object.entries(R.porCasa).sort((a,b)=>b[1].eur-a[1].eur||b[1].n-a[1].n);
+  h+=`<div class="card"><h3>${conPrecio?"Cobros del mes":"Visitas del mes"} (${R.visitas} visitas)</h3>
+    ${filas.map(([id,pc])=>{const c=casa(id);return `<div class="cobro ${cob[id]?"pagado":""}">
+      <div class="cinfo"><b>${esc(c.nombre)}</b><span class="meta">${pc.n} visitas · ${hfmt(pc.horas)}${conPrecio?` · ${eur(pc.eur)}`:""}</span></div>
+      ${conPrecio?`<button class="btn small ${cob[id]?"pri":""}" onclick="togglePago('${mk}','${id}')">${cob[id]?"✓ Pagado":"Pendiente"}</button>`:""}</div>`}).join("")||`<div class="meta">Ninguna visita este mes.</div>`}
+    ${conPrecio?"":`<div class="meta">Pon el precio por hora en cada casa o en Ajustes para ver los cobros.</div>`}
+    <div class="row"><button class="btn" onclick="exportCSV(${y},${m})">Exportar este mes a Excel</button></div></div>
+  <div class="meta" style="margin-top:8px">Toca un día para verlo o cambiarlo. El punto marca los días con cambios. Las horas reales cuentan para los cobros.</div>`;
+  return h;
+}
+function cambiarMes(n){const d=new Date(mesVista.y,mesVista.m+n,1);mesVista={y:d.getFullYear(),m:d.getMonth()};render()}
+function togglePago(mk,id){const o=S.cobros[mk]=S.cobros[mk]||{};o[id]?delete o[id]:o[id]=HOY();save();render()}
+
+/* ---------- AÑO ---------- */
+function vAnio(){
+  const y=mesVista.y,conPrecio=hayPrecio(),hoy=new Date();
+  let T={dias:0,visitas:0,horas:0,eur:0,cobrado:0};
+  const filas=MESES.map((nm,m)=>{const R=resumenMes(y,m);["dias","visitas","horas","eur","cobrado"].forEach(k=>T[k]+=R[k]);
+    const actual=y===hoy.getFullYear()&&m===hoy.getMonth(),clientes=Object.keys(R.porCasa).length;
+    return `<tr class="${actual?"actual":""}" onclick="mesVista={y:${y},m:${m}};vistaAnual=false;render()"><td>${Mayus(nm.slice(0,3))}</td><td>${R.dias}</td><td>${hfmt(R.horas)}</td>${conPrecio?`<td>${eur(R.eur)}</td><td>${clientes?(R.pagados===clientes?"✓":`${R.pagados}/${clientes}`):"—"}</td>`:`<td>${R.visitas}</td>`}</tr>`}).join("");
+  let h=segMesAnio()+`<div class="weeknav"><button class="btn small" aria-label="Año anterior" onclick="mesVista.y--;render()">‹</button><b>${y}</b><button class="btn small" aria-label="Año siguiente" onclick="mesVista.y++;render()">›</button></div>`;
+  h+=`<div class="sum"><div><span>Días</span><b>${T.dias}</b></div><div><span>Limpieza</span><b>${hfmt(T.horas)}</b></div><div><span>${conPrecio?"Total":"Visitas"}</span><b>${conPrecio?eur(T.eur):T.visitas}</b></div></div>`;
+  if(conPrecio)h+=`<div class="money">💶 Cobrado: <b>${eur(T.cobrado)}</b> · Pendiente: <b>${eur(T.eur-T.cobrado)}</b></div>`;
+  h+=`<div class="tablewrap"><table class="anio"><thead><tr><th>Mes</th><th>Días</th><th>Horas</th>${conPrecio?"<th>Total</th><th>Pagado</th>":"<th>Visitas</th>"}</tr></thead><tbody>${filas}</tbody></table></div>
+  <div class="meta" style="margin-top:8px">Toca un mes para ver el detalle. Incluye vacaciones, festivos y pausas.</div>`;
+  return h;
+}
+
+/* ---------- PLAN FIJO (plantilla con frecuencias) ---------- */
+function vPlan(){
+  const t=S.semana[diaPlan];
+  let h=`<div class="meta" style="margin-bottom:10px">Lo que se repite solo. Cada casa con su frecuencia. Los cambios de un día concreto se hacen en Semana.</div>`;
+  h+=`<div class="days">${DIAS.map(([k,n])=>`<button class="${k===diaPlan?"on":""} ${!S.semana[k].paradas.length?"vacio":""}" onclick="diaPlan='${k}';render()">${n}<small>${S.semana[k].paradas.length} casas</small></button>`).join("")}</div>`;
+  h+=`<div class="grid2" style="margin-bottom:12px"><label>Salgo a las<input id="plInicio" type="time" value="${esc(t.inicio)}" onchange="S.semana[diaPlan].inicio=this.value||'08:00';save()"></label>
+    <label>Vuelta a casa (min)<input id="plVuelta" type="number" inputmode="numeric" min="0" value="${+t.vuelta||0}" onchange="S.semana[diaPlan].vuelta=Math.max(0,+this.value||0);save()"></label></div>`;
+  h+=`<div class="list">`+(t.paradas.map((p,i)=>{const c=casa(p.casa);if(!c)return "";
+    return `<div class="card"><div class="row between"><h3>${i+1}. ${esc(c.nombre)}</h3><span class="chip">${c.horas} h</span></div>
+      <div class="meta">${esc(c.direccion)} · <b>${esc(c.poblacion)}</b></div>
+      <div class="grid2"><label>Frecuencia<select id="plF${i}" onchange="setFreq(${i},this.value)">${Object.entries(FREQ).map(([k,v])=>`<option value="${k}" ${p.freq===k?"selected":""}>${v}</option>`).join("")}</select></label>
+        <label>Trayecto hasta aquí (min)<input id="plT${i}" type="number" inputmode="numeric" min="0" value="${+p.trayecto||0}" onchange="S.semana[diaPlan].paradas[${i}].trayecto=Math.max(0,+this.value||0);save()"></label></div>
+      ${p.freq==="q"?`<label>Empieza<select id="plR${i}" onchange="S.semana[diaPlan].paradas[${i}].ref=this.value;save();render()">${[0,7].map(n=>{const r=iso(addD(lunes(new Date()),n));return `<option value="${r}" ${(Math.abs(Math.round((fromIso(r)-fromIso(p.ref))/6048e5))%2===0)?"selected":""}>${n?"La semana que viene":"Esta semana"}</option>`}).join("")}</select></label>`:""}
+      <div class="meta">Próximas: <b>${proximas(p,diaPlan).join(" · ")||"—"}</b></div>
+      <div class="row"><button class="btn small" aria-label="Subir" ${i===0?"disabled":""} onclick="moverPlan(${i},-1)">↑</button>
+        <button class="btn small" aria-label="Bajar" ${i===t.paradas.length-1?"disabled":""} onclick="moverPlan(${i},1)">↓</button>
+        <button class="btn small danger" onclick="S.semana[diaPlan].paradas.splice(${i},1);save();render()">Quitar del plan</button></div></div>`}).join("")||`<div class="empty">Ninguna casa fija este día.</div>`)+`</div>`;
+  h+=S.casas.length?`<div class="add"><select id="plAdd">${S.casas.map(c=>`<option value="${c.id}">${esc(c.nombre)} · ${esc(c.poblacion)}</option>`).join("")}</select><button class="btn pri" onclick="addPlan()">Añadir al plan</button></div>`
+    :`<div class="add"><button class="btn pri" onclick="setTab('casas')">Crear la primera casa</button></div>`;
+  /* Vacaciones y festivos */
+  const y=new Date().getFullYear(),proximos=S.libres.filter(l=>(l.hasta||l.desde)>=HOY());
+  h+=`<div class="card" style="margin-top:16px"><h3>🏖️ Vacaciones y festivos</h3>
+    <div class="meta">Esos días no sale ninguna casa. Si un día libre trabaja, añádela en Semana.</div>
+    <form class="grid2" onsubmit="event.preventDefault();addLibre()" novalidate>
+      <label>Desde<input id="lDesde" type="date"></label><label>Hasta<input id="lHasta" type="date"></label>
+      <label style="grid-column:1/-1">Motivo<input id="lNota" placeholder="Vacaciones, médico, puente…"></label>
+      <div class="err" id="lErr" style="grid-column:1/-1" hidden></div>
+      <div class="row" style="grid-column:1/-1"><button class="btn pri">Añadir días libres</button></div></form>
+    <div class="row"><button class="btn small" onclick="addFestivos(${y})">+ Festivos Cataluña ${y}</button><button class="btn small" onclick="addFestivos(${y+1})">+ Festivos Cataluña ${y+1}</button></div>
+    <div class="meta">Son los generales. Añade a mano los 2 locales de tu municipio.</div>
+    ${proximos.map(l=>`<div class="cobro"><div class="cinfo"><b>${l.tipo==="festivo"?"Festivo":"Libre"}: ${fCorta(fromIso(l.desde))}${l.hasta&&l.hasta!==l.desde?" – "+fCorta(fromIso(l.hasta)):""}</b><span class="meta">${esc(l.nota||"")}</span></div><button class="btn small" aria-label="Quitar" onclick="S.libres=S.libres.filter(x=>x.id!=='${l.id}');save();render()">✕</button></div>`).join("")||`<div class="meta">No hay días libres próximos.</div>`}
+  </div>`;
+  return h;
+}
+function addLibre(){
+  const d=$("lDesde").value,hs=$("lHasta").value||d,e=$("lErr");
+  if(!d){e.textContent="Elige al menos la fecha de inicio.";e.hidden=false;return}
+  if(hs<d){e.textContent="La fecha final es antes que la de inicio.";e.hidden=false;return}
+  S.libres.push({id:"l"+Date.now(),tipo:"libre",desde:d,hasta:hs,nota:$("lNota").value.trim()});
+  S.libres.sort((a,b)=>a.desde.localeCompare(b.desde));save();render();toast("Días libres añadidos");
+}
+function setFreq(i,v){const p=S.semana[diaPlan].paradas[i];p.freq=v;if(v==="q"&&!p.ref)p.ref=iso(lunes(new Date()));save();render()}
+function moverPlan(i,dx){const a=S.semana[diaPlan].paradas;[a[i],a[i+dx]]=[a[i+dx],a[i]];save();render()}
+function addPlan(){const id=$("plAdd").value;if(!id)return;S.semana[diaPlan].paradas.push({casa:id,trayecto:S.ajustes.trayecto,freq:"s",ref:iso(lunes(new Date()))});save();render();toast("Añadida al plan")}
+
+/* ---------- CASAS ---------- */
+function vCasas(){
+  const c=editId?casa(editId):{nombre:"",poblacion:"",direccion:"",horas:2,llave:"tiene",llaveNota:"",notas:"",tel:"",precio:""};
+  let h=`<form class="card" onsubmit="event.preventDefault();guardarCasa()">
+    <h3>${editId?"Editar casa":"Nueva casa"}</h3>
+    <label>Cliente<input id="fNombre" required value="${esc(c.nombre)}" placeholder="Casa García"></label>
+    <div class="grid2"><label>Población<input id="fPob" required value="${esc(c.poblacion)}" placeholder="Cornellà"></label>
+    <label>Horas<input id="fHoras" type="number" inputmode="decimal" step="0.5" min="0.5" value="${c.horas}"></label></div>
+    <label>Dirección<input id="fDir" required value="${esc(c.direccion)}" placeholder="C/ Major 12, 2º1ª"></label>
+    <div class="grid2"><label>Teléfono<input id="fTel" type="tel" inputmode="tel" value="${esc(c.tel||"")}" placeholder="600 123 456"></label>
+    <label>Precio por hora (€)<input id="fPrecio" type="number" inputmode="decimal" step="0.5" min="0" value="${c.precio||""}" placeholder="${S.ajustes.precio||"General"}"></label></div>
+    <div class="grid2"><label>Llave<select id="fLlave">${Object.entries(LLAVE).map(([k,v])=>`<option value="${k}" ${c.llave===k?"selected":""}>${v}</option>`).join("")}</select></label>
+    <label>Dónde está<input id="fLlNota" value="${esc(c.llaveNota)}" placeholder="Conserjería"></label></div>
+    <label>Notas<input id="fNotas" value="${esc(c.notas)}" placeholder="Productos, mascotas…"></label>
+    <div class="row"><button class="btn pri">${editId?"Guardar cambios":"Guardar casa"}</button>${editId?`<button type="button" class="btn" onclick="editId=null;render()">Cancelar</button>`:""}</div></form>
+  <div class="list" style="margin-top:12px">`;
+  const hoy=HOY();
+  h+=S.casas.map(c=>{const dias=DIAS.flatMap(([k,n])=>S.semana[k].paradas.filter(p=>p.casa===c.id).map(p=>n+(FREQC[p.freq]?" ("+FREQC[p.freq]+")":""))).join(", ")||"Sin plan fijo";
+    const conf=pedirBorrar===c.id,pausas=(c.pausas||[]).filter(p=>p.hasta>=hoy),ahora=pausada(c,hoy);
+    return `<div class="card ${conf?"confirm":""}"><div class="row between"><h3>${esc(c.nombre)}</h3><span class="chip ${ahora?"warn":""}">${ahora?"⏸ Pausada":c.horas+" h"}</span></div>
+    <div class="meta">${esc(c.direccion)} · <b>${esc(c.poblacion)}</b>${+c.precio>0?` · ${eur(+c.precio)}/h`:""}</div>
+    <div class="meta">🗓️ ${esc(dias)}</div>
+    <div class="row"><span class="chip ${c.llave==="recoger"?"warn":""}">🔑 ${LLAVE[c.llave]}${c.llaveNota?": "+esc(c.llaveNota):""}</span>${c.tel?`<span class="chip soft">📞 ${esc(c.tel)}</span>`:""}</div>
+    ${pausas.map(p=>`<div class="row meta">⏸ Pausa ${fCorta(fromIso(p.desde))} – ${fCorta(fromIso(p.hasta))}<button class="btn small" aria-label="Quitar pausa" onclick="quitarPausa('${c.id}','${p.desde}')">✕</button></div>`).join("")}
+    ${pausaId===c.id?`<form class="grid2" onsubmit="event.preventDefault();addPausa('${c.id}')" novalidate><label>Desde<input id="pzDesde" type="date" value="${hoy}"></label><label>Hasta<input id="pzHasta" type="date"></label>
+      <div class="err" id="pzErr" style="grid-column:1/-1" hidden></div>
+      <div class="row" style="grid-column:1/-1"><button class="btn small pri">Pausar</button><button type="button" class="btn small" onclick="pausaId=null;render()">Cancelar</button></div></form>`
+    :conf?`<div class="meta">¿Borrar esta casa y quitarla del plan y de todos los días?</div><div class="row"><button class="btn small danger" onclick="borrarCasa('${c.id}')">Sí, borrar</button><button class="btn small" onclick="pedirBorrar=null;render()">No</button></div>`
+      :`<div class="row">${telLinks(c)}</div><div class="row"><button class="btn small" onclick="editId='${c.id}';render();scrollTo(0,0)">Editar</button><button class="btn small" onclick="pausaId='${c.id}';render()">Pausar</button><button class="btn small danger" onclick="pedirBorrar='${c.id}';render()">Borrar</button></div>`}</div>`}).join("")||`<div class="empty">Aún no hay casas.</div>`;
+  h+=`</div><div class="card" style="margin-top:12px"><h3>🔑 Llaves</h3>${Object.keys(LLAVE).map(k=>{const cs=S.casas.filter(c=>c.llave===k);
+    return `<div class="meta"><b>${LLAVE[k]} (${cs.length})</b>${cs.length?": "+cs.map(c=>esc(c.nombre)+(c.llaveNota?" — "+esc(c.llaveNota):"")).join(" · "):""}</div>`}).join("")}</div>`;
+  h+=`<div class="card" style="margin-top:12px"><h3>Mi domicilio</h3><div class="meta">Punto de salida y vuelta cada día.</div>
+    <div class="grid2"><label>Dirección<input id="hDir" value="${esc(S.home.direccion)}" onchange="S.home.direccion=this.value;save()"></label><label>Población<input id="hPob" value="${esc(S.home.poblacion)}" onchange="S.home.poblacion=this.value;save()"></label></div></div>`;
+  return h;
+}
+function addPausa(id){
+  const d=$("pzDesde").value,hs=$("pzHasta").value,e=$("pzErr");
+  if(!d||!hs){e.textContent="Pon la fecha de inicio y la de fin.";e.hidden=false;return}
+  if(hs<d){e.textContent="La fecha final es antes que la de inicio.";e.hidden=false;return}
+  const c=casa(id);(c.pausas=c.pausas||[]).push({desde:d,hasta:hs});pausaId=null;save();render();toast("Casa pausada en esas fechas");
+}
+function quitarPausa(id,desde){const c=casa(id);c.pausas=(c.pausas||[]).filter(p=>p.desde!==desde);save();render()}
+function guardarCasa(){
+  const d={nombre:$("fNombre").value.trim(),poblacion:$("fPob").value.trim(),direccion:$("fDir").value.trim(),horas:+$("fHoras").value||2,tel:$("fTel").value.trim(),precio:+$("fPrecio").value||0,llave:$("fLlave").value,llaveNota:$("fLlNota").value.trim(),notas:$("fNotas").value.trim()};
+  if(editId)Object.assign(casa(editId),d);else S.casas.push({id:"c"+Date.now(),pausas:[],...d});
+  toast(editId?"Cambios guardados":"Casa guardada");editId=null;save();render();
+}
+function borrarCasa(id){
+  S.casas=S.casas.filter(c=>c.id!==id);
+  DIAS.forEach(([k])=>S.semana[k].paradas=S.semana[k].paradas.filter(p=>p.casa!==id));
+  Object.values(S.fechas).forEach(f=>f.paradas=f.paradas.filter(p=>p.casa!==id));
+  pedirBorrar=null;save();render();toast("Casa borrada");
+}
+
+/* ---------- COPIA ---------- */
+function vCopia(){
+  return `<div class="list">
+  <div class="card"><h3>Mi cuenta</h3><div class="meta"><b>${esc(U.displayName||"")}</b> · ${esc(U.email)}</div><div class="meta">☁️ Tus datos se guardan en la nube y funcionan sin cobertura.</div>
+    <form class="grid2" onsubmit="event.preventDefault();cambiarPass()" novalidate>
+      <label>Contraseña actual<input id="pAct" type="password" autocomplete="current-password"></label>
+      <label>Nueva contraseña<input id="pNueva" type="password" autocomplete="new-password"></label>
+      <div class="err" id="pErr" style="grid-column:1/-1" hidden></div>
+      <div class="row" style="grid-column:1/-1"><button class="btn">Cambiar contraseña</button><button type="button" class="btn" onclick="salir()">Cerrar sesión</button></div>
+    </form></div>
+  <div class="card"><h3>Preferencias</h3>
+    <label>Cómo me muevo (para "Ver ruta")</label>
+    <div class="seg">${Object.entries(MODOS).map(([k,v])=>`<button class="${S.ajustes.modo===k?"on":""}" onclick="setAj('modo','${k}')">${v}</button>`).join("")}</div>
+    <label>Aspecto</label>
+    <div class="seg">${[["auto","Automático"],["light","Claro"],["dark","Oscuro"]].map(([k,v])=>`<button class="${S.ajustes.tema===k?"on":""}" onclick="setAj('tema','${k}')">${v}</button>`).join("")}</div>
+    <div class="grid2">
+      <label>Trayecto por defecto (min)<input id="ajTray" type="number" inputmode="numeric" min="0" value="${S.ajustes.trayecto}" onchange="setAj('trayecto',Math.max(0,+this.value||0))"></label>
+      <label>Precio por hora general (€)<input id="ajPrecio" type="number" inputmode="decimal" min="0" step="0.5" value="${S.ajustes.precio||""}" placeholder="0" onchange="setAj('precio',Math.max(0,+this.value||0))"></label>
+    </div>
+    <div class="meta">Precio general. Si una casa tiene su propio precio, manda el de la casa. Así ves lo que cobra por día, mes y año.</div>
+    <div class="grid2" style="align-items:end">
+      <label>Hora de salida habitual<input id="ajInicio" type="time" value="${S.ajustes.inicio}" onchange="setAj('inicio',this.value||'08:00')"></label>
+      <button class="btn" onclick="DIAS.forEach(([k])=>S.semana[k].inicio=S.ajustes.inicio);save();toast('Hora aplicada al plan fijo')">Aplicar al plan fijo</button>
+    </div></div>
+  <div class="card"><h3>Exportar a Excel</h3><div class="meta">Crea un archivo CSV con todas las fechas del mes. Se abre en Excel o Google Sheets. Para otro mes, usa la pestaña Mes.</div><div class="row"><button class="btn pri" onclick="exportCSV()">Exportar este mes (CSV)</button></div></div>
+  <div class="card"><h3>Copia de seguridad</h3><div class="meta">Tus datos ya están en la nube. Esto es una copia extra en un archivo, por si acaso. Puedes guardarla en Google Drive.</div>
+    <div class="row"><button class="btn pri" onclick="exportJSON()">Guardar copia</button><label class="btn" style="flex-direction:row;color:var(--fg)">Restaurar copia<input type="file" id="fRestore" accept=".json,application/json" hidden onchange="restaurar(this)"></label></div></div>
+  <div class="card ${pedirBorrar==="__todo"?"confirm":""}"><h3>Empezar de cero</h3><div class="meta">Borra las casas de ejemplo y la ruta.</div>
+    ${pedirBorrar==="__todo"?`<div class="meta">¿Seguro? Se borran todos tus datos, también de la nube.</div><div class="row"><button class="btn small danger" onclick="S={...VACIO(),ajustes:S.ajustes};pedirBorrar=null;save();setTab('casas');toast('Todo borrado')">Sí, borrar todo</button><button class="btn small" onclick="pedirBorrar=null;render()">No</button></div>`
+      :`<div class="row"><button class="btn danger" onclick="pedirBorrar='__todo';render()">Borrar todo</button></div>`}</div>
+  </div>`;
+}
+const hoy=()=>new Date().toISOString().slice(0,10);
+async function entregar(nombre,texto,tipo){
+  const blob=new Blob([texto],{type:tipo});
+  try{
+    const file=new File([blob],nombre,{type:tipo});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:nombre});return true}
+  }catch(e){if(e.name==="AbortError")return false}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nombre;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast("Archivo descargado");return true;
+}
+function exportCSV(y,m){
+  if(y===undefined){const d=new Date();y=d.getFullYear();m=d.getMonth()}
+  const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const filas=[["Fecha","Día","Orden","Llegada","Salida","Cliente","Población","Dirección","Horas plan","Horas reales","Precio/h","Importe","Trayecto (min)","Llave","Dónde llave","Notas"]];
+  const num=v=>String(Math.round(v*100)/100).replace(".",",");
+  for(let d=new Date(y,m,1);d.getMonth()===m;d=addD(d,1)){
+    const f=iso(d);calc(plan(f)).out.forEach(({c,p,llega,sale},n)=>filas.push([`${pad(d.getDate())}/${pad(m+1)}/${y}`,LARGO[k7(d)],n+1,hhmm(llega),hhmm(sale),c.nombre,c.poblacion,c.direccion,num(c.horas),num(horasDe(f,c)),num(precioDe(c)),num(horasDe(f,c)*precioDe(c)),p.trayecto,LLAVE[c.llave],c.llaveNota,c.notas]));
+  }
+  entregar(`ruta-${MESES[m]}-${y}.csv`,"\ufeff"+filas.map(f=>f.map(q).join(";")).join("\r\n"),"text/csv");
+}
+function setAj(k,v){S.ajustes[k]=v;save();if(k==="tema")aplicarTema();if(k!=="trayecto"&&k!=="precio"&&k!=="inicio")render();else toast("Guardado")}
+const eur=n=>n.toLocaleString("es-ES",{style:"currency",currency:"EUR",maximumFractionDigits:2});
+async function exportJSON(){if(await entregar(`copia-ruta-${hoy()}.json`,JSON.stringify(S,null,1),"application/json")){S.ajustes.ultimaCopia=iso(new Date());save();render()}}
+function restaurar(inp){
+  const f=inp.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.casas)||!d.semana)throw 0;S=d;normalizar();save();setTab("semana");toast("Copia restaurada")}catch(e){toast("Ese archivo no es una copia válida")}};
+  r.readAsText(f);
+}
+
+if(FB_OK)auth.onAuthStateChanged(u=>u?alEntrar(u):alSalir());else pintarAuth();
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+</script>
+</body>
+</html>

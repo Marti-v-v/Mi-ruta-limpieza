@@ -1,0 +1,78 @@
+RUTA DE LIMPIEZA - App Android (PWA) con Firebase
+=================================================
+
+ARCHIVOS
+- index.html            La app
+- firebase-config.js    Datos de TU proyecto Firebase (hay que rellenarlo)
+- firestore.rules       Reglas de seguridad para la base de datos
+- manifest.json, sw.js, icon-*.png   Instalación y funcionamiento sin cobertura
+
+
+PASO 1 - CREAR FIREBASE (10 min, gratis)
+-----------------------------------------
+1. Entra en https://console.firebase.google.com con tu cuenta de Google.
+2. "Crear proyecto" -> nombre: ruta-limpieza -> Google Analytics: NO -> Crear.
+3. Authentication -> Comenzar -> Correo electrónico/contraseña -> Habilitar -> Guardar.
+4. Firestore Database -> Crear base de datos
+   -> Ubicación: europe-southwest1 (Madrid) o eur3 (Europa)
+   -> Modo producción -> Crear.
+5. Firestore -> pestaña "Reglas" -> borra lo que hay, pega el contenido
+   de firestore.rules -> Publicar.
+6. Engranaje (Configuración del proyecto) -> General -> "Tus apps"
+   -> icono web </> -> nombre: ruta -> Registrar app.
+   Copia los valores de firebaseConfig (apiKey, authDomain, projectId...)
+   y pégalos en firebase-config.js.
+
+   La apiKey de Firebase NO es secreta: puede ir en la web.
+   Lo que protege los datos son las reglas del paso 5.
+
+
+PASO 2 - SUBIR GRATIS A GITHUB PAGES
+-------------------------------------
+1. Crea cuenta en https://github.com
+2. "New repository" -> nombre: ruta -> Public -> Create.
+3. "uploading an existing file" -> arrastra TODOS los archivos -> Commit.
+4. Settings -> Pages -> Branch: main / (root) -> Save.
+5. En 1-2 minutos: https://TUUSUARIO.github.io/ruta/
+6. En Firebase: Authentication -> Configuración -> Dominios autorizados
+   -> Agregar dominio -> TUUSUARIO.github.io
+
+
+PASO 3 - INSTALAR EN SU ANDROID
+--------------------------------
+1. Abre el enlace en Chrome (o Samsung Internet).
+2. Menú -> "Instalar aplicación" / "Añadir a pantalla de inicio".
+3. Crear cuenta: correo, nombre y contraseña.
+4. Si olvida la contraseña: "He olvidado la contraseña" -> le llega un correo.
+
+
+CÓMO FUNCIONA
+-------------
+- Los datos se guardan en Firebase (nube) y también en el móvil.
+- Sin cobertura funciona igual; al volver la conexión se sube solo.
+- La primera vez que entra necesita internet.
+- Puede usar la misma cuenta en otro móvil o tablet.
+- Si ya usaba la versión anterior en ese móvil y se registra con el
+  mismo correo, sus datos se pasan solos a la nube.
+
+PESTAÑAS
+- Semana: fechas reales. Ruta del día, horas, trayectos, llaves,
+  llamar / WhatsApp, horas reales. Cambios aquí son SOLO para ese día.
+- Mes: calendario + cobros del mes. Botón "Año": resumen de 12 meses.
+- Plan: lo que se repite solo (lunes a domingo, con frecuencias).
+  Abajo: vacaciones y festivos de Cataluña.
+- Casas: alta con teléfono y precio propio. Pausar entre fechas.
+- Ajustes: cuenta, preferencias, exportar a Excel, copia extra.
+
+
+ACTUALIZAR LA APP
+-----------------
+Si cambias index.html, abre sw.js y sube el número de versión
+("ruta-limpieza-v6" -> "v7"). Sube los dos archivos a GitHub.
+El móvil se actualiza solo al abrir la app con internet.
+
+
+GRATIS
+------
+El plan gratuito de Firebase (Spark) da de sobra para una persona:
+miles de lecturas y escrituras al día. No pide tarjeta.
