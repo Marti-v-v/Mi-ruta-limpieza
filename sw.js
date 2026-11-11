@@ -1,5 +1,5 @@
 // Sube el número de versión cada vez que cambies index.html
-const CACHE = "ruta-limpieza-v10";
+const CACHE = "ruta-limpieza-v11";
 const FILES = ["./", "./index.html", "./firebase-config.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable.png"];
 
 self.addEventListener("install", e => {

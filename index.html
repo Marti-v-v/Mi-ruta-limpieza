@@ -206,7 +206,7 @@ const docRef=()=>db.collection("usuarios").doc(U.uid);
 const save=()=>{if(!U)return;clearTimeout(tGuardar);tGuardar=setTimeout(escribir,600)};
 function escribir(){
   if(!U||!S||ultimoJson==="__borrada")return;const j=JSON.stringify(S);if(j===ultimoJson)return;ultimoJson=j;
-  docRef().set({json:j,email:U.email,actualizado:firebase.firestore.FieldValue.serverTimestamp()})
+  docRef().set({json:j,email:U.email,actualizado:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})
     .catch(e=>toast("No se ha podido guardar ("+e.code+")"));
 }
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){clearTimeout(tGuardar);escribir()}});
@@ -237,12 +237,22 @@ function alEntrar(user){
   },err=>{clearTimeout(vigilancia);$("view").innerHTML=`<div class="empty">No se pueden leer los datos (${esc(err.code)}). Revisa las reglas de Firestore.</div>`});
 }
 function salir(){clearTimeout(tGuardar);if(S)escribir();if(unsub)unsub();unsub=null;desbloqueado=false;auth.signOut()}
-function alSalir(){U=null;S=null;ultimoJson="";appVisible=false;desbloqueado=false;aplicarTema();authError="";pintarAuth()}
+function alSalir(){pinGuardado=undefined;U=null;S=null;ultimoJson="";appVisible=false;desbloqueado=false;aplicarTema();authError="";pintarAuth()}
 /* ---------- PUERTA: correo verificado -> PIN -> app ---------- */
-function puerta(u){
+let pinGuardado=undefined;
+async function puerta(u){
   U=u;
   if(!u.emailVerified)return pintarVerificar();
-  if(!ls.get(pinKey()))return pintarPin("crear");
+  if(ls.get(resetKey()))return pintarPin("crear");
+  if(pinGuardado===undefined){
+    $("nav").hidden=true;$("titulo").textContent="Mi ruta";$("view").innerHTML=`<div class="empty">Comprobando…</div>`;
+    pinGuardado=ls.get(pinKey());
+    if(!pinGuardado){
+      try{const s=await docRef().get();pinGuardado=s.exists&&s.data().pin||null;if(pinGuardado)ls.set(pinKey(),pinGuardado)}
+      catch(e){pinGuardado=undefined;$("view").innerHTML=`<div class="empty">Sin conexión. La primera vez en este móvil necesitas internet.<br><br><button class="btn pri" onclick="puerta(U)">Reintentar</button></div>`;return}
+    }
+  }
+  if(!pinGuardado)return pintarPin("crear");
   if(!desbloqueado)return pintarPin("pedir");
   if(!S)alEntrar(u);else mostrarApp();
 }
@@ -262,8 +272,19 @@ async function comprobarVerificado(){
   catch(e){const x=$("vErr");x.textContent=errTxt(e);x.hidden=false;$("vBtn").disabled=false}
 }
 async function reenviarVerificacion(){try{await U.sendEmailVerification();authInfo="Correo reenviado.";pintarVerificar()}catch(e){authInfo="";const x=$("vErr");x.textContent=errTxt(e);x.hidden=false}}
-const pinKey=()=>"rutaLimpieza.pin."+U.uid;
-async function hashPin(pin){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(U.uid+":"+pin));return btoa(String.fromCharCode(...new Uint8Array(b)))}
+const pinKey=()=>"rutaLimpieza.pin."+U.uid, resetKey=()=>"rutaLimpieza.pinReset."+U.uid;
+async function pbkdf2(pin,salB64){
+  const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveBits"]);
+  const b=await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:Uint8Array.from(atob(salB64),c=>c.charCodeAt(0)),iterations:150000},k,256);
+  return btoa(String.fromCharCode(...new Uint8Array(b)));
+}
+async function shaViejo(pin){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(U.uid+":"+pin));return btoa(String.fromCharCode(...new Uint8Array(b)))}
+async function pinCorrecto(pin,g){return typeof g==="string"?(await shaViejo(pin))===g:(await pbkdf2(pin,g.s))===g.h}
+async function guardarPin(pin){
+  const s=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))),obj={s,h:await pbkdf2(pin,s)};
+  pinGuardado=obj;ls.set(pinKey(),obj);ls.del(resetKey());
+  docRef().set({pin:obj},{merge:true}).catch(e=>toast("El PIN no se ha subido a la nube ("+e.code+")"));
+}
 function pintarPin(modo){
   pinModo=modo;$("nav").hidden=true;$("salir").hidden=modo!=="pedir";
   const crear=modo==="crear"||modo==="cambiar";
@@ -282,28 +303,19 @@ async function enviarPin(){
   const p1=$("pin1").value,e=$("pinErr"),fallo=t=>{e.textContent=t;e.hidden=false};
   if(!/^\d{4}$/.test(p1))return fallo("El PIN son 4 números.");
   if(pinModo==="pedir"){
-    if(await hashPin(p1)===ls.get(pinKey())){pinFallos=0;desbloqueado=true;return puerta(U)}
+    if(await pinCorrecto(p1,pinGuardado)){
+      pinFallos=0;desbloqueado=true;
+      if(typeof pinGuardado==="string")await guardarPin(p1);
+      return puerta(U);
+    }
     pinFallos++;if(pinFallos>=5){toast("Demasiados intentos. Entra con tu contraseña.");return olvidePin()}
     $("pin1").value="";return fallo(`PIN incorrecto. Te quedan ${5-pinFallos} intentos.`);
   }
   if(p1!==$("pin2").value)return fallo("Los dos PIN no coinciden.");
-  ls.set(pinKey(),await hashPin(p1));desbloqueado=true;toast("PIN guardado");
+  await guardarPin(p1);desbloqueado=true;toast("PIN guardado");
   if(pinModo==="cambiar")return mostrarApp();puerta(U);
 }
-async function borrarCuenta(){
-  const pass=$("bcPass").value,e=$("bcErr"),fallo=t=>{e.textContent=t;e.hidden=false;$("bcBtn").disabled=false};
-  if(!pass)return fallo("Escribe tu contraseña.");
-  $("bcBtn").disabled=true;
-  try{
-    await U.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(U.email,pass));
-    clearTimeout(tGuardar);if(unsub)unsub();unsub=null;ultimoJson="__borrada";
-    await docRef().delete();
-    const uid=U.uid;ls.del("rutaLimpieza.pin."+uid);
-    await U.delete();
-    S=null;pedirBorrar=null;authInfo="Cuenta y datos borrados.";toast("Cuenta borrada");
-  }catch(err){ultimoJson="";fallo(err.code==="auth/invalid-credential"||err.code==="auth/wrong-password"?"La contraseña no es correcta.":errTxt(err))}
-}
-function olvidePin(){ls.del(pinKey());pinFallos=0;authInfo="Entra con tu correo y contraseña. Luego elegirás un PIN nuevo.";salir()}
+function olvidePin(){ls.set(resetKey(),1);ls.del(pinKey());pinGuardado=undefined;pinFallos=0;authInfo="Entra con tu correo y contraseña. Luego elegirás un PIN nuevo.";salir()}
 /* Bloquea la app si ha estado en segundo plano más de 5 minutos */
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="hidden")ocultoDesde=Date.now();
