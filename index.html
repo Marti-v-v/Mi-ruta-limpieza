@@ -28,6 +28,14 @@
 .money b{color:var(--fg)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+/* iPhone: campos de fecha y hora sin desbordar */
+.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+label{min-width:0}
+input,select{max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-height:42px;text-align:left;line-height:1.2}
+input::-webkit-date-and-time-value{text-align:left;margin:0}
+.days button{min-width:0;overflow:hidden}
+.days button small{font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 .bar{position:sticky;top:0;z-index:5;background:var(--accent);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
