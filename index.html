@@ -205,7 +205,7 @@ const docRef=()=>db.collection("usuarios").doc(U.uid);
 /* Guardar: espera un momento y sube todo de una vez. Sin cobertura queda en el móvil y se sube al volver. */
 const save=()=>{if(!U)return;clearTimeout(tGuardar);tGuardar=setTimeout(escribir,600)};
 function escribir(){
-  if(!U||!S)return;const j=JSON.stringify(S);if(j===ultimoJson)return;ultimoJson=j;
+  if(!U||!S||ultimoJson==="__borrada")return;const j=JSON.stringify(S);if(j===ultimoJson)return;ultimoJson=j;
   docRef().set({json:j,email:U.email,actualizado:firebase.firestore.FieldValue.serverTimestamp()})
     .catch(e=>toast("No se ha podido guardar ("+e.code+")"));
 }
@@ -289,6 +289,19 @@ async function enviarPin(){
   if(p1!==$("pin2").value)return fallo("Los dos PIN no coinciden.");
   ls.set(pinKey(),await hashPin(p1));desbloqueado=true;toast("PIN guardado");
   if(pinModo==="cambiar")return mostrarApp();puerta(U);
+}
+async function borrarCuenta(){
+  const pass=$("bcPass").value,e=$("bcErr"),fallo=t=>{e.textContent=t;e.hidden=false;$("bcBtn").disabled=false};
+  if(!pass)return fallo("Escribe tu contraseña.");
+  $("bcBtn").disabled=true;
+  try{
+    await U.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(U.email,pass));
+    clearTimeout(tGuardar);if(unsub)unsub();unsub=null;ultimoJson="__borrada";
+    await docRef().delete();
+    const uid=U.uid;ls.del("rutaLimpieza.pin."+uid);
+    await U.delete();
+    S=null;pedirBorrar=null;authInfo="Cuenta y datos borrados.";toast("Cuenta borrada");
+  }catch(err){ultimoJson="";fallo(err.code==="auth/invalid-credential"||err.code==="auth/wrong-password"?"La contraseña no es correcta.":errTxt(err))}
 }
 function olvidePin(){ls.del(pinKey());pinFallos=0;authInfo="Entra con tu correo y contraseña. Luego elegirás un PIN nuevo.";salir()}
 /* Bloquea la app si ha estado en segundo plano más de 5 minutos */
@@ -712,6 +725,11 @@ function vCopia(){
   <div class="card"><h3>Exportar a Excel</h3><div class="meta">Crea un archivo CSV con todas las fechas del mes. Se abre en Excel o Google Sheets. Para otro mes, usa la pestaña Mes.</div><div class="row"><button class="btn pri" onclick="exportCSV()">Exportar este mes (CSV)</button></div></div>
   <div class="card"><h3>Copia de seguridad</h3><div class="meta">Tus datos ya están en la nube. Esto es una copia extra en un archivo, por si acaso. Puedes guardarla en Google Drive.</div>
     <div class="row"><button class="btn pri" onclick="exportJSON()">Guardar copia</button><label class="btn" style="flex-direction:row;color:var(--fg)">Restaurar copia<input type="file" id="fRestore" accept=".json,application/json" hidden onchange="restaurar(this)"></label></div></div>
+  <div class="card ${pedirBorrar==="__cuenta"?"confirm":""}"><h3>Borrar mi cuenta</h3><div class="meta">Borra la cuenta y todos sus datos de la nube y de este móvil. No se puede deshacer. Si quieres, guarda antes una copia.</div>
+    ${pedirBorrar==="__cuenta"?`<form class="grid2" onsubmit="event.preventDefault();borrarCuenta()" novalidate><label style="grid-column:1/-1">Escribe tu contraseña para confirmar<input id="bcPass" type="password" autocomplete="current-password"></label>
+      <div class="err" id="bcErr" style="grid-column:1/-1" hidden></div>
+      <div class="row" style="grid-column:1/-1"><button class="btn small danger" id="bcBtn">Borrar cuenta para siempre</button><button type="button" class="btn small" onclick="pedirBorrar=null;render()">Cancelar</button></div></form>`
+      :`<div class="row"><button class="btn danger" onclick="pedirBorrar='__cuenta';render()">Borrar mi cuenta</button></div>`}</div>
   <div class="card ${pedirBorrar==="__todo"?"confirm":""}"><h3>Empezar de cero</h3><div class="meta">Borra las casas de ejemplo y la ruta.</div>
     ${pedirBorrar==="__todo"?`<div class="meta">¿Seguro? Se borran todos tus datos, también de la nube.</div><div class="row"><button class="btn small danger" onclick="S={...VACIO(),ajustes:S.ajustes};pedirBorrar=null;save();setTab('casas');toast('Todo borrado')">Sí, borrar todo</button><button class="btn small" onclick="pedirBorrar=null;render()">No</button></div>`
       :`<div class="row"><button class="btn danger" onclick="pedirBorrar='__todo';render()">Borrar todo</button></div>`}</div>
