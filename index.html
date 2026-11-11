@@ -207,6 +207,7 @@ if(FB_OK){
   firebase.initializeApp(FIREBASE_CONFIG);
   auth=firebase.auth();auth.languageCode="es";
   db=firebase.firestore();
+  try{db.settings({experimentalAutoDetectLongPolling:true})}catch(e){}
   db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
 }
 const docRef=()=>db.collection("usuarios").doc(U.uid);
@@ -257,7 +258,7 @@ async function puerta(u){
     pinGuardado=ls.get(pinKey());
     if(!pinGuardado){
       try{const s=await docRef().get();pinGuardado=s.exists&&s.data().pin||null;if(pinGuardado)ls.set(pinKey(),pinGuardado)}
-      catch(e){pinGuardado=undefined;$("view").innerHTML=`<div class="empty">Sin conexión. La primera vez en este móvil necesitas internet.<br><br><button class="btn pri" onclick="puerta(U)">Reintentar</button></div>`;return}
+      catch(e){pinGuardado=undefined;const perm=e.code==="permission-denied";$("view").innerHTML=`<div class="empty">${perm?"No hay permiso para leer tus datos. Revisa las reglas de Firestore o vuelve a entrar.":"No se puede conectar con la nube. La primera vez en este móvil necesitas internet."}<br><span class="meta">(${esc(e.code||e.message||"error")})</span><br><br><button class="btn pri" onclick="puerta(U)">Reintentar</button>${perm?` <button class="btn" onclick="salir()">Salir</button>`:""}</div>`;return}
     }
   }
   if(!pinGuardado)return pintarPin("crear");
